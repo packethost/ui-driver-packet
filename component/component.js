@@ -1,83 +1,200 @@
-/*!!!!!!!!!!!Do not change anything between here (the DRIVERNAME placeholder will be automatically replaced at buildtime)!!!!!!!!!!!*/
 import NodeDriver from 'shared/mixins/node-driver';
+import fetch from '@rancher/ember-api-store/utils/fetch';
+import layout from './template';
 
-// do not remove LAYOUT, it is replaced at build time with a base64 representation of the template of the hbs template
-// we do this to avoid converting template to a js file that returns a string and the cors issues that would come along with that
-const LAYOUT;
-/*!!!!!!!!!!!DO NOT CHANGE END!!!!!!!!!!!*/
+const OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04','ubuntu_18_04', 'rancher'];
+const PLAN_BLACKLIST = ['baremetal_2a']; // quick wheres james spader?
+const DEFAULTS = {
+  os:           'ubuntu_16_04',
+  facilityCode: 'ewr1',
+  plan:         'baremetal_0',
+  billingCycle: 'hourly',
+}
+const hash = Ember.RSVP.hash;
+const on = Ember.on;
+const get =Ember.get;
+const setProperties=Ember.setProperties;
+const computed=Ember.computed;
+const observer=Ember.observer;
+const set = Ember.set;
+const alias = Ember.computed.alias;
+const isEmpty=Ember.isEmpty;
 
-
-/*!!!!!!!!!!!GLOBAL CONST START!!!!!!!!!!!*/
-// EMBER API Access - if you need access to any of the Ember API's add them here in the same manner rather then import them via modules, since the dependencies exist in rancher we dont want to expor the modules in the amd def
-const computed     = Ember.computed;
-const get          = Ember.get;
-const set          = Ember.set;
-const alias        = Ember.computed.alias;
-const service      = Ember.inject.service;
-
-const defaultRadix = 10;
-const defaultBase  = 1024;
-/*!!!!!!!!!!!GLOBAL CONST END!!!!!!!!!!!*/
-
-
-
-/*!!!!!!!!!!!DO NOT CHANGE START!!!!!!!!!!!*/
 export default Ember.Component.extend(NodeDriver, {
-  driverName: '%%DRIVERNAME%%',
-  config:     alias('model.%%DRIVERNAME%%Config'),
-  app:        service(),
+  layout,
+  driverName:       'packet',
+  facilityChoices:  null,
+  planChoices:      null,
+  osChoices:        null,
+  step:             1,
+
+  config:     alias('model.packetConfig'),
 
   init() {
-    // This does on the fly template compiling, if you mess with this :cry:
-    const decodedLayout = window.atob(LAYOUT);
-    const template      = Ember.HTMLBars.compile(decodedLayout, {
-      moduleName: 'nodes/components/driver-%%DRIVERNAME%%/template'
-    });
-    set(this,'layout', template);
-
     this._super(...arguments);
 
+    setProperties(this, {
+      facilityChoices: [],
+      planChoices:     [],
+      osChoices:       [],
+      allOS:           [],
+    });
   },
-  /*!!!!!!!!!!!DO NOT CHANGE END!!!!!!!!!!!*/
 
-  // Write your component here, starting with setting 'model' to a machine with your config populated
-  bootstrap: function() {
-    // bootstrap is called by rancher ui on 'init', you're better off doing your setup here rather then the init function to ensure everything is setup correctly
-    let config = get(this, 'globalStore').createRecord({
-      type: '%%DRIVERNAME%%Config',
-      cpuCount: 2,
-      memorySize: 2048,
+  actions: {
+    authPacket(savedCB) {
+      let promises = {
+        plans:      this.apiRequest('plans'),
+        opSys:      this.apiRequest('operating-systems'),
+        facilities: this.apiRequest('facilities'),
+      };
+
+      hash(promises).then((hash) => {
+        let osChoices     = this.parseOSs(hash.opSys.operating_systems);
+        let selectedPlans = this.parsePlans(osChoices.findBy('slug', 'ubuntu_14_04'), hash.plans.plans);
+        let config        = get(this, 'config');
+
+        setProperties(this, {
+          allOS:           osChoices,
+          allPlans:        hash.plans.plans,
+          step:            2,
+          facilityChoices: hash.facilities.facilities,
+          osChoices,
+          planChoices:     selectedPlans,
+        });
+
+        setProperties(config, DEFAULTS);
+
+        savedCB(true);
+      }, (err) => {
+        let errors = get(this, 'errors') || [];
+
+        errors.push(`${ err.statusText }: ${ err.body.message }`);
+
+        set(this, 'errors', errors);
+        savedCB(false);
+      });
+    },
+  },
+
+  planChoiceDetails: computed('config.plan', function() {
+    let planSlug = get(this, 'config.plan');
+    let plan     = get(this, 'allPlans').findBy('slug', planSlug);
+
+    return plan;
+  }),
+
+  facilityObserver: on('init', observer('config.facility', function() {
+    let facilities = get(this, 'facilityChoices');
+    let slug       = get(this, 'config.facility');
+    let facility   = facilities.findBy('code', slug);
+    let plans      = get(this, 'allPlans');
+    let out        = [];
+
+    if (plans && facility) {
+      plans.forEach((plan) => {
+        plan.available_in.forEach((fac) => {
+          let facId = fac.href.split('/')[fac.href.split('/').length - 1];
+
+          if (facility.id === facId) {
+            out.push(plan);
+          }
+        })
+      });
+      set(this, 'planChoices', out);
+    }
+  })),
+
+  bootstrap() {
+    let store = get(this, 'globalStore');
+    let config = store.createRecord({
+      type:      'packetConfig',
+      projectId: '',
+      apiKey:    '',
     });
 
-    set(this, 'model.%%DRIVERNAME%%Config', config);
+    const model = get(this, 'model');
+
+    set(model, 'packetConfig', config);
   },
 
-  // Add custom validation beyond what can be done from the config API schema
-  validate() {
-    // Get generic API validation errors
-    this._super();
-    var errors = get(this, 'errors')||[];
-    if ( !get(this, 'model.name') ) {
-      errors.push('Name is required');
-    }
+  apiRequest(command, opt, out) {
+    opt = opt || {};
 
-    // Add more specific errors
+    let url = `${ get(this, 'app.proxyEndpoint') }/`;
 
-    // Check something and add an error entry if it fails:
-    if ( parseInt(get(this, 'config.memorySize'), defaultRadix) < defaultBase ) {
-      errors.push('Memory Size must be at least 1024 MB');
-    }
-
-    // Set the array of errors for display,
-    // and return true if saving should continue.
-    if ( get(errors, 'length') ) {
-      set(this, 'errors', errors);
-      return false;
+    if ( opt.url ) {
+      url += opt.url.replace(/^http[s]?\/\//, '');
     } else {
-      set(this, 'errors', null);
-      return true;
+      url += `${ 'api.packet.net' }/${ command }`;
     }
+
+    return fetch(url, {
+      headers: {
+        'Accept':       'application/json',
+        'X-Auth-Token': get(this, 'config.apiKey'),
+      },
+    }).then((res) => {
+      let body = res.body;
+
+      if ( out ) {
+        out[command].pushObjects(body[command]);
+      } else {
+        out = body;
+      }
+
+      // De-paging
+      if ( body && body.links && body.links.pages && body.links.pages.next ) {
+        opt.url = body.links.pages.next;
+
+        return this.apiRequest(command, opt, out).then(() => {
+          return out;
+        });
+      } else {
+        return out;
+      }
+    });
   },
 
-  // Any computed properties or custom logic can go here
+  parseOSs(osList) {
+    return osList.filter((os) => {
+      if (OS_WHITELIST.includes(os.slug) && !isEmpty(os.provisionable_on)) {
+        return os;
+      }
+    });
+  },
+
+  parsePlans(os, plans) {
+    let out = [];
+
+    os.provisionable_on.forEach((loc) => {
+      let plan = plans.findBy('slug', loc);
+
+      if (plan && !PLAN_BLACKLIST.includes(loc)) {
+        out.push(plan);
+      }
+    });
+
+    return out;
+  },
+
+  validate() {
+    let errors = get(this, 'model').validationErrors();
+
+    if (!get(this, 'config.projectId') ) {
+      errors.push('Project ID is required');
+    }
+
+    if (!get(this, 'config.apiKey') ) {
+      errors.push('API Key is requried');
+    }
+
+    if ( errors.length ) {
+      set(this, 'errors', errors.uniq());
+
+      return false;
+    }
+
+    return true;
+  },
 });
