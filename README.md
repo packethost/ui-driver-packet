@@ -7,19 +7,17 @@ Rancher 2 UI driver for the [Packet](https://www.packet.com) IaaS platform.
 See the Rancher Documentation on [how to add a node driver](https://rancher.com/docs/rancher/v2.x/en/admin-settings/drivers/node-drivers/) to your installation. The relevant part is in 'Adding Custom Node Drivers':
 
 1. From the Global view, choose Tools > Drivers in the navigation bar. From the Drivers page, select the Node Drivers tab. In version prior to v2.2.0, you can select Node Drivers directly in the navigation bar.
-1. Click Add Node Driver.
+1. Click Add Node Driver Or click edit on Packet's drive if listed already.
 1. Complete the Add Node Driver form. Then click Create:
 
     | Key               | Value |
     | ----------------- | ----- |
     | Download URL      | `https://github.com/packethost/docker-machine-driver-packet/releases/download/v0.2.0/docker-machine-driver-packet_linux-amd64.zip` |
-    | Custom UI URL     | `CUSTOM URL goes here` |
-    | Whitelist Domains | `api.packet.net` |
+    | Custom UI URL     | `https://tinkerbell.org/ui-driver-packet/1.0.0/component.js` |
+    | Whitelist Domains | `api.packet.net` ,`tinkerbell.org` |
 
 1. Wait for the driver to become "Active"
 1. From the Global view, go to Clusters -> Add Cluster, your driver and custom UI should show up.
-
-![Configuration screen](docs/configuration-screen.png)
 
 ## Development
 
