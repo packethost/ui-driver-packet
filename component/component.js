@@ -2,7 +2,7 @@ import NodeDriver from 'shared/mixins/node-driver';
 import fetch from '@rancher/ember-api-store/utils/fetch';
 import layout from './template';
 
-const OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04', 'rancher'];
+const OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04','ubuntu_18_04', 'rancher'];
 const PLAN_BLACKLIST = ['baremetal_2a']; // quick wheres james spader?
 const DEFAULTS = {
   os:           'ubuntu_16_04',
@@ -32,7 +32,6 @@ export default Ember.Component.extend(NodeDriver, {
 
   init() {
     this._super(...arguments);
-    console.log("alojse jedan")
 
     setProperties(this, {
       facilityChoices: [],

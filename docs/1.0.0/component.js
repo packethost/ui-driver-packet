@@ -6,7 +6,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  var OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04', 'rancher'];
+  var OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04', 'ubuntu_18_04', 'rancher'];
   var PLAN_BLACKLIST = ['baremetal_2a'];
   var DEFAULTS = {
     os: 'ubuntu_16_04',
@@ -34,7 +34,6 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
     init: function init() {
       this._super.apply(this, arguments);
 
-      console.log("alojse jedan");
       setProperties(this, {
         facilityChoices: [],
         planChoices: [],
