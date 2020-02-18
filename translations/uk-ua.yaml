@@ -1,0 +1,13 @@
+---
+languageName: "Українська"
+languageContribute: "Допомогти з перекладом Rancher"
+nodeDriver:
+  displayName:
+    packet: Packet
+  packet:
+    instanceSection: Інстанс
+    location: Розташування
+    planDetails:
+      cpu: Процесори
+      memory: Пам'ять
+  

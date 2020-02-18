@@ -1,0 +1,37 @@
+---
+languageName: "日本語"
+languageContribute: "Rancher の翻訳にご協力ください"
+nodeDriver:
+  addTemplate: ノードテンプレートを追加
+  editTemplate: "ノードテンプレートを編集: {name}"
+  editWarning: 編集されたノードテンプレートはノードプールによって作成された新しいノードにのみ影響します。既存のノードは自動的に更新または置換されません。<br>プールからノードを削除した場合はテンプレート内の新しい設定を仕様して新しいノードが作成されます。
+  displayName:    
+    packet: Packet
+    
+  driverOptions: "{driver} オプション"
+  templateOptions: "{appName} テンプレート"
+  packet:
+    accountSection: アカウントアクセス
+    projectId:
+      placeholder: あなたの Packet プロジェクト ID
+    apiKey:
+      placeholder: あなたの Packet API キー
+    instanceSection: インスタンス
+    instanceOptionsSection: インスタンスオプション
+    loginAction: "次へ: 認証とインスタンスの選択"
+    authentication: 認証
+    location: ロケーション
+    planDetails:
+      label: インスタンス詳細
+      cpu: CPUs
+      memory: メモリ
+      drives: ドライブ
+      network: NICs
+    image:
+      label: イメージ
+    size:
+      label: サイズ
+    regionSection: リージョン
+    region:
+      label: リージョン
+  
