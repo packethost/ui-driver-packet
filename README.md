@@ -13,7 +13,7 @@ See the Rancher Documentation on [how to add a node driver](https://rancher.com/
     | Key               | Value |
     | ----------------- | ----- |
     | Download URL      | `https://github.com/packethost/docker-machine-driver-packet/releases/latest/download/docker-machine-driver-packet_linux-amd64.zip` |
-    | Custom UI URL     | `https://tinkerbell.org/ui-driver-packet/1.0.0/component.js` |
+    | Custom UI URL     | `https://tinkerbell.org/ui-driver-packet/1.0.1/component.js` |
     | Whitelist Domains | `api.packet.net` ,`tinkerbell.org` |
 
 1. Wait for the driver to become "Active"
