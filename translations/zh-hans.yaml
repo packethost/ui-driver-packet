@@ -1,0 +1,42 @@
+languageName: "简体中文"
+languageContribute: "帮助翻译Rancher"
+nodeDriver:
+  addTemplate: 添加主机模板
+  editTemplate: "编辑主机模板: {name}"
+  cloneTemplate: "从{name}克隆主机模板"
+  editWarning: 编辑主机模板只会影响由主机池创建的新主机，现有主机将不会自动更新或替换。<br>如果从池中删除主机，将使用模板中的新设置创建新主机。
+  externalError: "尝试加载自定义驱动{ driverName }出错，请验证自定义节点驱动配置。"
+  cloudCredentialError: 云凭证必须设置。
+  nameError: 名称必须设置。
+  displayName:
+    packet: Packet
+  driverOptions: "{driver}选项"
+  templateOptions: "{appName}模板"
+  packet:
+    accountSection: 账户访问
+    projectId:
+      label: 项目
+      placeholder: Packet项目 ID
+    apiKey:
+      label: API Key
+      placeholder: Packet API Key
+    apiKeyHelp: '由Packet的<a href="https://app.packet.net/portal#/api-keys" target="_blank">API Keys</a>页面获取。'
+    instanceSection: 实例
+    instanceOptionsSection: 实例选项
+    loginAction: '下一步: 认证并且选择实例'
+    authentication: 验证
+    location: 所在地区
+    planDetails:
+      label: 实例详情
+      cpu: CPUs
+      memory: 内存
+      drives: 驱动
+      network: NICs
+    image:
+      label: 镜像
+    size:
+      label: 规格
+    regionSection: 区域
+    region:
+      label: 区域
+  

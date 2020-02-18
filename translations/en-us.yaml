@@ -1,0 +1,37 @@
+languageName: "English"
+languageContribute: "Help Translate Rancher"
+nodeDriver:
+  displayName:
+    packet: Packet
+  driverOptions: "{driver} Options"
+  templateOptions: "{appName} Template" 
+  packet:
+    accountSection: Account Access
+    projectId:
+      label: Project ID
+      placeholder: Your Packet project ID
+    apiKey:
+      label: Account API Key
+      placeholder: Your Packet API key
+    apiKeyHelp: From the Packet <a href="https://app.packet.net/users/0/api-keys" target="_blank">API Keys</a> screen
+    instanceSection: Instance
+    instanceOptionsSection: Instance dicks
+    loginAction: "Next: Authenticate & select an instance"
+    authentication: Authenticating
+    location: Location
+    planDetails:
+      label: Instance Details
+      cpu: CPUs
+      memory: Memory
+      drives: Drives
+      network: NICs
+    image:
+      label: Image
+    size:
+      label: Size
+    instanceTypeOnDemand: On Demand  
+    instanceTypeOnReserved: Reserved Hardware  
+    regionSection: Region
+    region:
+      label: Region
+ 
