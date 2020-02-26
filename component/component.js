@@ -46,12 +46,14 @@ export default Ember.Component.extend(NodeDriver, {
   },
 
   actions: {
-    save() {
-      //todo: validations here
-      console.log("asdasdasdsa")
-      this._super(...arguments);
-    },
     authPacket(savedCB) {
+      if (!this.validate())
+      {
+        savedCB(false);
+        return;
+      }
+
+    
       let config = get(this, 'config');
       let promises = {
         plans: this.apiRequest('plans'),
