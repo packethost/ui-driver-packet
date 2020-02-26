@@ -46,36 +46,30 @@ export default Ember.Component.extend(NodeDriver, {
   },
 
   actions: {
+    save() {
+      //todo: validations here
+      console.log("asdasdasdsa")
+      this._super(...arguments);
+    },
     authPacket(savedCB) {
       let config = get(this, 'config');
       let promises = {
         plans: this.apiRequest('plans'),
         opSys: this.apiRequest('operating-systems'),
         facilities: this.apiRequest('facilities'),
-        hw_reserved_plans: this.apiRequest('projects/' + config.projectId + '/hardware-reservations'),
       };
 
       hash(promises).then((hash) => {
         let osChoices = this.parseOSs(hash.opSys.operating_systems);
-        let selectedPlans = this.parsePlans(osChoices.findBy('slug', 'ubuntu_14_04'), hash.plans.plans);
-        let allplansCombined = hash.plans.plans;
-        let reservedPlans = []
-        for (let i = 0; i < hash.hw_reserved_plans.hardware_reservations.length; i++) {
-          let _reserverdPlan = hash.hw_reserved_plans.hardware_reservations[i]
-          _reserverdPlan.plan.available_in = [_reserverdPlan.facility]
-          allplansCombined.push(_reserverdPlan.plan);
-          reservedPlans.push(_reserverdPlan.plan);
-        }
+        let selectedPlans = this.parsePlans(osChoices.findBy('slug', 'ubuntu_16_04'), hash.plans.plans);
 
         setProperties(this, {
           allOS: osChoices,
-          allPlans: allplansCombined,
+          allPlans: hash.plans.plans,
           step: 2,
           facilityChoices: hash.facilities.facilities,
           osChoices,
           planChoices: selectedPlans,
-          onDemandPlans: hash.plans.plans,
-          reservedPlans: reservedPlans,
         });
 
         setProperties(config, DEFAULTS);
@@ -83,7 +77,6 @@ export default Ember.Component.extend(NodeDriver, {
         savedCB(true);
       }, (err) => {
         let errors = get(this, 'errors') || [];
-
         errors.push(`${err.statusText}: ${err.body.message}`);
 
         set(this, 'errors', errors);
@@ -114,54 +107,41 @@ export default Ember.Component.extend(NodeDriver, {
     return plan;
   }),
 
+  osObserver: on('init', observer('config.os', function () {
+    this.notifyPropertyChange('config.facility');
+  })),
+
   facilityObserver: on('init', observer('config.facility', function () {
     let facilities = get(this, 'facilityChoices');
     let slug = get(this, 'config.facility');
+    if (!slug) {
+      slug = "ewr1"
+    }
     let facility = facilities.findBy('code', slug);
     let out = [];
-    let deviceType = get(this, 'config.deviceType');
 
-    switch (deviceType) {
-      case "on-demand":
-        let onDemandPlans = get(this, 'onDemandPlans');
-        if (onDemandPlans && facility) {
-          onDemandPlans.forEach((plan) => {
-            plan.available_in.forEach((fac) => {
-              let facId = fac.href.split('/')[fac.href.split('/').length - 1];
+    let allPlans = get(this, 'allPlans');
+    if (allPlans && facility) {
+      allPlans.forEach((plan) => {
+        plan.available_in.forEach((fac) => {
+          let facId = fac.href.split('/')[fac.href.split('/').length - 1];
 
-              if (facility.id === facId) {
-                out.push(plan);
-              }
-            })
-          });
-          if (out.length != 0)
-            set(this, 'config.plan', out[0].slug)
-          else
-            set(this, 'config.plan', {})
-          set(this, 'planChoices', out);
-        }
-        break;
-      case "reserved":
-        let reservedPlans = get(this, 'reservedPlans');
-        if (reservedPlans && facility) {
-          reservedPlans.forEach((plan) => {
-            plan.available_in.forEach((fac) => {
-              let facId = fac.href.split('/')[fac.href.split('/').length - 1];
-
-              if (facility.id === facId) {
-                out.push(plan);
-              }
-            })
-          });
-          if (out.length != 0)
-            set(this, 'config.plan', out[0].slug)
-          else
-            set(this, 'config.plan', {})
-          set(this, 'planChoices', out);
-        }
-        break;
+          if (facility.id === facId) {
+            out.push(plan);
+          }
+        })
+      });
+      if (out.length != 0)
+        set(this, 'config.plan', out[0].slug)
+      else {
+        set(this, 'config.plan', {})
+      }
+      let currentOS = get(this, 'config.os');
+      let osChoices = get(this, 'osChoices');
+      let filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
+      console.log(filteredByOs.length)
+      set(this, 'planChoices', filteredByOs);
     }
-
   })),
 
   bootstrap() {
@@ -170,6 +150,7 @@ export default Ember.Component.extend(NodeDriver, {
       type: 'packetConfig',
       projectId: '',
       apiKey: '',
+      hwReservationId: '',
       deviceType: 'on-demand',
     });
 
@@ -221,6 +202,7 @@ export default Ember.Component.extend(NodeDriver, {
     setProperties(config, {
       deviceType: 'reserved',
       facility: config.facility,
+      hwReservationId: "next-available",
     })
     this.notifyPropertyChange('config.facility');
   },
@@ -248,7 +230,7 @@ export default Ember.Component.extend(NodeDriver, {
     os.provisionable_on.forEach((loc) => {
       let plan = plans.findBy('slug', loc);
 
-      if (plan && !PLAN_BLACKLIST.includes(loc)) {
+      if (plan && !PLAN_BLACKLIST.includes(loc) && !out.includes(plan)) {
         out.push(plan);
       }
     });

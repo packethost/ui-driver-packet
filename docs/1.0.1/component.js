@@ -54,6 +54,11 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       });
     },
     actions: {
+      save: function save() {
+        console.log("asdasdasdsa");
+
+        this._super.apply(this, arguments);
+      },
       authPacket: function authPacket(savedCB) {
         var _this = this;
 
@@ -61,33 +66,20 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
         var promises = {
           plans: this.apiRequest('plans'),
           opSys: this.apiRequest('operating-systems'),
-          facilities: this.apiRequest('facilities'),
-          hw_reserved_plans: this.apiRequest('projects/' + config.projectId + '/hardware-reservations')
+          facilities: this.apiRequest('facilities')
         };
         hash(promises).then(function (hash) {
           var osChoices = _this.parseOSs(hash.opSys.operating_systems);
 
-          var selectedPlans = _this.parsePlans(osChoices.findBy('slug', 'ubuntu_14_04'), hash.plans.plans);
-
-          var allplansCombined = hash.plans.plans;
-          var reservedPlans = [];
-
-          for (var i = 0; i < hash.hw_reserved_plans.hardware_reservations.length; i++) {
-            var _reserverdPlan = hash.hw_reserved_plans.hardware_reservations[i];
-            _reserverdPlan.plan.available_in = [_reserverdPlan.facility];
-            allplansCombined.push(_reserverdPlan.plan);
-            reservedPlans.push(_reserverdPlan.plan);
-          }
+          var selectedPlans = _this.parsePlans(osChoices.findBy('slug', 'ubuntu_16_04'), hash.plans.plans);
 
           setProperties(_this, {
             allOS: osChoices,
-            allPlans: allplansCombined,
+            allPlans: hash.plans.plans,
             step: 2,
             facilityChoices: hash.facilities.facilities,
             osChoices: osChoices,
-            planChoices: selectedPlans,
-            onDemandPlans: hash.plans.plans,
-            reservedPlans: reservedPlans
+            planChoices: selectedPlans
           });
           setProperties(config, DEFAULTS);
           savedCB(true);
@@ -120,51 +112,39 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       var plan = get(this, 'allPlans').findBy('slug', planSlug);
       return plan;
     }),
+    osObserver: on('init', observer('config.os', function () {
+      this.notifyPropertyChange('config.facility');
+    })),
     facilityObserver: on('init', observer('config.facility', function () {
       var facilities = get(this, 'facilityChoices');
       var slug = get(this, 'config.facility');
+
+      if (!slug) {
+        slug = "ewr1";
+      }
+
       var facility = facilities.findBy('code', slug);
       var out = [];
-      var deviceType = get(this, 'config.deviceType');
+      var allPlans = get(this, 'allPlans');
 
-      switch (deviceType) {
-        case "on-demand":
-          var onDemandPlans = get(this, 'onDemandPlans');
+      if (allPlans && facility) {
+        allPlans.forEach(function (plan) {
+          plan.available_in.forEach(function (fac) {
+            var facId = fac.href.split('/')[fac.href.split('/').length - 1];
 
-          if (onDemandPlans && facility) {
-            onDemandPlans.forEach(function (plan) {
-              plan.available_in.forEach(function (fac) {
-                var facId = fac.href.split('/')[fac.href.split('/').length - 1];
-
-                if (facility.id === facId) {
-                  out.push(plan);
-                }
-              });
-            });
-            if (out.length != 0) set(this, 'config.plan', out[0].slug);else set(this, 'config.plan', {});
-            set(this, 'planChoices', out);
-          }
-
-          break;
-
-        case "reserved":
-          var reservedPlans = get(this, 'reservedPlans');
-
-          if (reservedPlans && facility) {
-            reservedPlans.forEach(function (plan) {
-              plan.available_in.forEach(function (fac) {
-                var facId = fac.href.split('/')[fac.href.split('/').length - 1];
-
-                if (facility.id === facId) {
-                  out.push(plan);
-                }
-              });
-            });
-            if (out.length != 0) set(this, 'config.plan', out[0].slug);else set(this, 'config.plan', {});
-            set(this, 'planChoices', out);
-          }
-
-          break;
+            if (facility.id === facId) {
+              out.push(plan);
+            }
+          });
+        });
+        if (out.length != 0) set(this, 'config.plan', out[0].slug);else {
+          set(this, 'config.plan', {});
+        }
+        var currentOS = get(this, 'config.os');
+        var osChoices = get(this, 'osChoices');
+        var filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
+        console.log(filteredByOs.length);
+        set(this, 'planChoices', filteredByOs);
       }
     })),
     bootstrap: function bootstrap() {
@@ -173,6 +153,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
         type: 'packetConfig',
         projectId: '',
         apiKey: '',
+        hwReservationId: '',
         deviceType: 'on-demand'
       });
       var model = get(this, 'model');
@@ -218,7 +199,8 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       var config = get(this, 'config');
       setProperties(config, {
         deviceType: 'reserved',
-        facility: config.facility
+        facility: config.facility,
+        hwReservationId: "next-available"
       });
       this.notifyPropertyChange('config.facility');
     },
@@ -242,7 +224,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       os.provisionable_on.forEach(function (loc) {
         var plan = plans.findBy('slug', loc);
 
-        if (plan && !PLAN_BLACKLIST.includes(loc)) {
+        if (plan && !PLAN_BLACKLIST.includes(loc) && !out.includes(plan)) {
           out.push(plan);
         }
       });
