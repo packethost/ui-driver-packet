@@ -57,7 +57,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       authPacket: function authPacket(savedCB) {
         var _this = this;
 
-        if (!this.validate()) {
+        if (!this.validateAuthentication()) {
           savedCB(false);
           return;
         }
@@ -134,7 +134,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
           });
         });
         if (out.length != 0) set(this, 'config.plan', out[0].slug);else {
-          set(this, 'config.plan', {});
+          set(this, 'config.plan', "");
         }
         var currentOS = get(this, 'config.os');
         var osChoices = get(this, 'osChoices');
@@ -224,6 +224,28 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       return out;
     },
     validate: function validate() {
+      var errors = get(this, 'model').validationErrors();
+
+      if (!get(this, 'config.projectId')) {
+        errors.push('Project ID is required');
+      }
+
+      if (!get(this, 'config.apiKey')) {
+        errors.push('API Key is requried');
+      }
+
+      if (!get(this, 'config.plan') || get(this, 'config.plan') == "") {
+        errors.push('Plan is requried');
+      }
+
+      if (errors.length) {
+        set(this, 'errors', errors.uniq());
+        return false;
+      }
+
+      return true;
+    },
+    validateAuthentication: function validateAuthentication() {
       var errors = get(this, 'model').validationErrors();
 
       if (!get(this, 'config.projectId')) {

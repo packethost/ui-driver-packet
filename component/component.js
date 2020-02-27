@@ -47,7 +47,7 @@ export default Ember.Component.extend(NodeDriver, {
 
   actions: {
     authPacket(savedCB) {
-      if (!this.validate()) {
+      if (!this.validateAuthentication()) {
         savedCB(false);
         return;
       }
@@ -132,7 +132,7 @@ export default Ember.Component.extend(NodeDriver, {
       if (out.length != 0)
         set(this, 'config.plan', out[0].slug)
       else {
-        set(this, 'config.plan', {})
+        set(this, 'config.plan', "")
       }
       let currentOS = get(this, 'config.os');
       let osChoices = get(this, 'osChoices');
@@ -234,6 +234,30 @@ export default Ember.Component.extend(NodeDriver, {
   },
 
   validate() {
+    let errors = get(this, 'model').validationErrors();
+
+    if (!get(this, 'config.projectId')) {
+      errors.push('Project ID is required');
+    }
+
+    if (!get(this, 'config.apiKey')) {
+      errors.push('API Key is requried');
+    }
+
+    if (!get(this, 'config.plan') || get(this, 'config.plan') == "") {
+      errors.push('Plan is requried');
+    }
+
+    if (errors.length) {
+      set(this, 'errors', errors.uniq());
+
+      return false;
+    }
+
+    return true;
+  },
+
+  validateAuthentication() {
     let errors = get(this, 'model').validationErrors();
 
     if (!get(this, 'config.projectId')) {
