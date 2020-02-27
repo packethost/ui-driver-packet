@@ -118,12 +118,8 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
     facilityObserver: on('init', observer('config.facility', function () {
       var facilities = get(this, 'facilityChoices');
       var slug = get(this, 'config.facility');
-
-      if (!slug) {
-        slug = "ewr1";
-      }
-
       var facility = facilities.findBy('code', slug);
+      set(this, 'config.facilityCode', slug);
       var out = [];
       var allPlans = get(this, 'allPlans');
 
@@ -143,7 +139,6 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
         var currentOS = get(this, 'config.os');
         var osChoices = get(this, 'osChoices');
         var filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
-        console.log(filteredByOs.length);
         set(this, 'planChoices', filteredByOs);
       }
     })),
@@ -199,7 +194,6 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       var config = get(this, 'config');
       setProperties(config, {
         deviceType: 'reserved',
-        facility: config.facility,
         hwReservationId: "next-available"
       });
       this.notifyPropertyChange('config.facility');
@@ -207,8 +201,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
     getOnDemandPlans: function getOnDemandPlans() {
       var config = get(this, 'config');
       setProperties(config, {
-        deviceType: 'on-demand',
-        facility: config.facility
+        deviceType: 'on-demand'
       });
       this.notifyPropertyChange('config.facility');
     },

@@ -47,13 +47,11 @@ export default Ember.Component.extend(NodeDriver, {
 
   actions: {
     authPacket(savedCB) {
-      if (!this.validate())
-      {
+      if (!this.validate()) {
         savedCB(false);
         return;
       }
 
-    
       let config = get(this, 'config');
       let promises = {
         plans: this.apiRequest('plans'),
@@ -116,10 +114,8 @@ export default Ember.Component.extend(NodeDriver, {
   facilityObserver: on('init', observer('config.facility', function () {
     let facilities = get(this, 'facilityChoices');
     let slug = get(this, 'config.facility');
-    if (!slug) {
-      slug = "ewr1"
-    }
     let facility = facilities.findBy('code', slug);
+    set(this, 'config.facilityCode', slug)
     let out = [];
 
     let allPlans = get(this, 'allPlans');
@@ -141,7 +137,6 @@ export default Ember.Component.extend(NodeDriver, {
       let currentOS = get(this, 'config.os');
       let osChoices = get(this, 'osChoices');
       let filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
-      console.log(filteredByOs.length)
       set(this, 'planChoices', filteredByOs);
     }
   })),
@@ -203,7 +198,6 @@ export default Ember.Component.extend(NodeDriver, {
     let config = get(this, 'config');
     setProperties(config, {
       deviceType: 'reserved',
-      facility: config.facility,
       hwReservationId: "next-available",
     })
     this.notifyPropertyChange('config.facility');
@@ -213,7 +207,6 @@ export default Ember.Component.extend(NodeDriver, {
     let config = get(this, 'config');
     setProperties(config, {
       deviceType: 'on-demand',
-      facility: config.facility,
     })
     this.notifyPropertyChange('config.facility');
   },
