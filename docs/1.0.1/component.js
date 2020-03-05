@@ -12,6 +12,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
   var DEFAULTS = {
     os: 'ubuntu_16_04',
     facilityCode: 'ewr1',
+    facility: 'ewr1',
     billingCycle: 'hourly'
   };
   var hash = Ember.RSVP.hash;

@@ -7,6 +7,7 @@ const PLAN_BLACKLIST = ['baremetal_2a']; // quick wheres james spader?
 const DEFAULTS = {
   os: 'ubuntu_16_04',
   facilityCode: 'ewr1',
+  facility: 'ewr1',
   billingCycle: 'hourly',
 }
 const hash = Ember.RSVP.hash;
