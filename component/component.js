@@ -142,11 +142,19 @@ export default Ember.Component.extend(NodeDriver, {
       let osChoices = get(this, 'osChoices');
       let filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
       set(this, 'planChoices', filteredByOs);
+
       if (filteredByOs.length > 0)
-      set(this, 'config.plan', filteredByOs[0].slug)
-    else if (filteredByOs.length == 0) {
-      set(this, 'config.plan', "")
-    }
+        set(this, 'config.plan', filteredByOs[0].slug)
+      else if (filteredByOs.length == 0) {
+        set(this, 'config.plan', "")
+      }
+      //always set to baremetal_0 when available
+      for (var i = 0; filteredByOs.length; i++) {
+        if (filteredByOs[i].slug == 'baremetal_0') {
+          set(this, 'config.plan', filteredByOs[i].slug)
+          break;
+        }
+      }
     }
   })),
 

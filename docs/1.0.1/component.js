@@ -90,11 +90,6 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
             planChoices: selectedPlans
           });
           setProperties(config, DEFAULTS);
-
-          if (!config.plan) {
-            set(_this, 'config.plan', selectedPlans[0]);
-          }
-
           var facilityCode = get(_this, 'config.facilityCode');
 
           if (!facilityCode) {
@@ -140,7 +135,6 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
       var facility = facilities.findBy('code', slug);
       set(this, 'config.facilityCode', slug);
       var out = [];
-      var plan = get(this, 'config.plan');
       var allPlans = get(this, 'allPlans');
 
       if (allPlans && facility) {
@@ -153,13 +147,20 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
             }
           });
         });
-        if (out.length > 0) set(this, 'config.plan', out[0].slug);else if (out.length == 0) {
-          set(this, 'config.plan', "");
-        }
         var currentOS = get(this, 'config.os');
         var osChoices = get(this, 'osChoices');
         var filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
         set(this, 'planChoices', filteredByOs);
+        if (filteredByOs.length > 0) set(this, 'config.plan', filteredByOs[0].slug);else if (filteredByOs.length == 0) {
+          set(this, 'config.plan', "");
+        }
+
+        for (var i = 0; filteredByOs.length; i++) {
+          if (filteredByOs[i].slug == 'baremetal_0') {
+            set(this, 'config.plan', filteredByOs[i].slug);
+            break;
+          }
+        }
       }
     })),
     bootstrap: function bootstrap() {
