@@ -155,7 +155,7 @@ define("nodes/components/driver-packet/component", ["exports", "shared/mixins/no
           set(this, 'config.plan', "");
         }
 
-        for (var i = 0; filteredByOs.length; i++) {
+        for (var i = 0; i < filteredByOs.length; i++) {
           if (filteredByOs[i].slug == 'baremetal_0') {
             set(this, 'config.plan', filteredByOs[i].slug);
             break;

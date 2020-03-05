@@ -149,7 +149,7 @@ export default Ember.Component.extend(NodeDriver, {
         set(this, 'config.plan', "")
       }
       //always set to baremetal_0 when available
-      for (var i = 0; filteredByOs.length; i++) {
+      for (var i = 0; i < filteredByOs.length; i++) {
         if (filteredByOs[i].slug == 'baremetal_0') {
           set(this, 'config.plan', filteredByOs[i].slug)
           break;
