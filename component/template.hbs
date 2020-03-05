@@ -64,7 +64,7 @@
         </label>
       </div>
       <div class="col span-10">
-        <select class="form-control" onchange={{action (mut config.facility) value="target.value"}}>
+        <select class="form-control" onchange={{action (mut config.facilityCode) value="target.value"}}>
           {{#each facilityChoices as |choice|}}
           <option value={{choice.code}} selected={{eq config.facilityCode choice.code}}>
             {{choice.name}}
