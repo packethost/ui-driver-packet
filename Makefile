@@ -1,10 +1,10 @@
 default: build
 
-version := 1.0.1
+version := 1.0.2
 build: 
 	npm run build
 release:
 	npm run build 
-	rm -r docs/$(version)
+	if [ -d 'docs/$(version)' ]; then rm -Rf docs/$(version); fi
 	mkdir docs/$(version)
 	cp dist/* docs/$(version)

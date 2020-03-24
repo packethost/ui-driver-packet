@@ -215,7 +215,7 @@ export default Ember.Component.extend(NodeDriver, {
     let config = get(this, 'config');
     setProperties(config, {
       deviceType: 'reserved',
-      hwReservationId: "next-available",
+      hwReservationId: 'next-available',
     })
     this.notifyPropertyChange('config.facilityCode');
   },
@@ -224,7 +224,9 @@ export default Ember.Component.extend(NodeDriver, {
     let config = get(this, 'config');
     setProperties(config, {
       deviceType: 'on-demand',
+      hwReservationId: '',
     })
+    console.log(config.hwReservationId)
     this.notifyPropertyChange('config.facilityCode');
   },
 
