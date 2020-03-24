@@ -4,6 +4,7 @@ version := 1.0.2
 build: 
 	npm run build
 release:
+	npm install
 	npm run build 
 	if [ -d 'docs/$(version)' ]; then rm -Rf docs/$(version); fi
 	mkdir docs/$(version)
