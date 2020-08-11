@@ -21,23 +21,24 @@
               }}
         {{/input-or-display}}
       </div>
-      <div class="col span-6">
-        <label class="acc-label">
-          {{t "nodeDriver.packet.apiKey.label"}}{{field-required}}
-        </label>
-        {{#input-or-display editable=(not dataFetched) value=config.apiKey obfuscate=true}}
-        {{input
-                type="password"
-                name="password"
-                value=config.apiKey
-                classNames="form-control"
-                placeholder=(t "nodeDriver.packet.apiKey.placeholder")
-              }}
-        {{/input-or-display}}
-        <p class="text-info">
-          {{t "nodeDriver.packet.apiKeyHelp" htmlSafe=true}}
-        </p>
-      </div>
+      {{#accordion-list-item
+         title=(t "modalAddCloudKey.packet.token.label")
+         detail=(t "modalAddCloudKey.packet.token.help" htmlSafe=true)
+         expandAll=expandAll
+         expand=(action expandFn)
+         expandOnInit=true
+      }}
+        {{form-auth-cloud-credential
+          driverName=driverName
+          parseAndCollectErrors=(action "errorHandler")
+          primaryResource=primaryResource
+          cloudCredentials=cloudCredentials
+          finishAndSelectCloudCredential=(action "finishAndSelectCloudCredential")
+          progressStep=(action "authPacket")
+          cancel=(action "cancel")
+          createLabel="modalAddCloudKey.packet.authAccountButton"
+        }}
+      {{/accordion-list-item}}
     </div>
   </div>
 

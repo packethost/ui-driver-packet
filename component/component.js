@@ -1,6 +1,9 @@
-import NodeDriver from 'shared/mixins/node-driver';
+import NodeDriver, { DynamicDependentKeysProperty, registerDisplayLocation, registerDisplaySize } from 'shared/mixins/node-driver';
 import fetch from '@rancher/ember-api-store/utils/fetch';
 const LAYOUT;
+
+registerDisplayLocation(new DynamicDependentKeysProperty({ driver: '%%DRIVERNAME%%', keyOrKeysToWatch: 'config.facilityCode' }));
+registerDisplaySize(new DynamicDependentKeysProperty({ driver: '%%DRIVERNAME%%', keyOrKeysToWatch: 'config.plan' }));
 
 const OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04', 'ubuntu_18_04', 'rancher'];
 const PLAN_BLACKLIST = ['baremetal_2a']; // quick wheres james spader?
@@ -21,12 +24,15 @@ const isEmpty = Ember.isEmpty;
 
 export default Ember.Component.extend(NodeDriver, {
   driverName: 'packet',
+  cloudCredentials: null,
   facilityChoices: null,
   planChoices: null,
   osChoices: null,
   step: 1,
 
   config: alias('model.packetConfig'),
+  app: service(),
+  intl: service(),
 
   init() {
     const decodedLayout = window.atob(LAYOUT);
@@ -46,7 +52,19 @@ export default Ember.Component.extend(NodeDriver, {
   },
 
   actions: {
+    finishAndSelectCloudCredential(cred) {
+      if (cred) {
+        set(this, 'model.cloudCredentialId', get(cred, 'id'));
+
+        this.send('authPacket');
+      }
+    },
     authPacket(savedCB) {
+      const auth = {
+        type: 'cloud',
+        token: get(this, 'model.cloudCredentialId'),
+      };
+
       if (!this.validateAuthentication()) {
         savedCB(false);
         return;
@@ -160,10 +178,10 @@ export default Ember.Component.extend(NodeDriver, {
 
   bootstrap() {
     let store = get(this, 'globalStore');
+    set(this, 'cloudCredentials', this.globalStore.all('cloudCredential'));
     let config = store.createRecord({
       type: 'packetConfig',
       projectId: '',
-      apiKey: '',
       hwReservationId: '',
       deviceType: 'on-demand',
     });
@@ -265,6 +283,10 @@ export default Ember.Component.extend(NodeDriver, {
 
     if (!get(this, 'config.plan') || get(this, 'config.plan') == "") {
       errors.push('Plan is requried');
+    }
+
+    if (!this.validateCloudCredentials()) {
+      errors.push(this.intl.t('nodeDriver.cloudCredentialError'));
     }
 
     if (errors.length) {
