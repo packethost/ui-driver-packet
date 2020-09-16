@@ -1,6 +1,10 @@
+![](https://img.shields.io/badge/Stability-Maintained-green.svg)
+
 # Rancher 2 Packet UI Driver
 
 Rancher 2 UI driver for the [Packet](https://www.packet.com) IaaS platform.
+
+This repository is [Maintained](https://github.com/packethost/standards/blob/master/maintained-statement.md) meaning that this software is supported by Packet and its community - available to use in production environments.
 
 ## Using the Packet UI Driver
 
