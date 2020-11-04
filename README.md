@@ -1,17 +1,17 @@
 ![](https://img.shields.io/badge/Stability-Maintained-green.svg)
 
-# Rancher 2 Packet UI Driver
+# Rancher 2 Equinix Metal UI Driver
 
-Rancher 2 UI driver for the [Packet](https://www.packet.com) IaaS platform.
+Rancher 2 UI driver for the [Equinix Metal](https://metal.equinix.com) IaaS platform.
 
-This repository is [Maintained](https://github.com/packethost/standards/blob/master/maintained-statement.md) meaning that this software is supported by Packet and its community - available to use in production environments.
+This repository is [Maintained](https://github.com/packethost/standards/blob/master/maintained-statement.md) meaning that this software is supported by Equinix Metal and its community - available to use in production environments.
 
-## Using the Packet UI Driver
+## Using the Equinix Metal UI Driver
 
 See the Rancher Documentation on [how to add a node driver](https://rancher.com/docs/rancher/v2.x/en/admin-settings/drivers/node-drivers/) to your installation. The relevant part is in 'Adding Custom Node Drivers':
 
 1. From the Global view, choose Tools > Drivers in the navigation bar. From the Drivers page, select the Node Drivers tab. In version prior to v2.2.0, you can select Node Drivers directly in the navigation bar.
-1. Click Add Node Driver Or click edit on Packet's drive if listed already.
+1. Click Add Node Driver Or click edit on Equinix Metal's drive if listed already.
 1. Complete the Add Node Driver form. Then click Create:
 
     | Key               | Value |
