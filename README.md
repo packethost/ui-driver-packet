@@ -16,9 +16,9 @@ See the Rancher Documentation on [how to add a node driver](https://rancher.com/
 
     | Key               | Value |
     | ----------------- | ----- |
-    | Download URL      | `https://github.com/packethost/docker-machine-driver-packet/releases/latest/download/docker-machine-driver-packet_linux-amd64.zip` |
+    | Download URL      | `https://github.com/equinix/docker-machine-driver-metal/releases/download/v0.4.0/docker-machine-driver-metal_linux-amd64.zip` |
     | Custom UI URL     | `https://tinkerbell.org/ui-driver-packet/1.0.2/component.js` |
-    | Whitelist Domains | `api.packet.net` ,`tinkerbell.org` |
+    | Whitelist Domains | `api.equinix.com` ,`tinkerbell.org` |
 
 1. Wait for the driver to become "Active"
 1. From the Global view, go to Clusters -> Add Cluster, your driver and custom UI should show up.
