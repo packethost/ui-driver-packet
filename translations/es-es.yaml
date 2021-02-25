@@ -6,20 +6,20 @@ nodeDriver:
   editTemplate: "Editar plantilla: {name}"
   editWarning: La edición de una plantilla de nodo solo afectará a los nuevos nodos creados por un grupo de nodos; los nodos existentes no se actualizarán ni reemplazarán automáticamente.<br>Si elimina nodos de un grupo, se crearán nuevos utilizando las nuevas configuraciones en la plantilla.
   displayName:   
-    packet: Paquete   
+    metal: Paquete   
   driverOptions: "Opciones de {driver}"
   templateOptions: "{appName} plantilla"
     accountSection: Acceso a la Cuenta
     apiKey:
       label: Clave API
-      placeholder: Su clave de API de Exoscale
+      placeholder: Su clave de API de Equinix Metal
     secretKey:
       label: Llave secreta
-      placeholder: Su clave secreta Exoscale
+      placeholder: Su clave secreta Equinix Metal
       provided: Previsto
-    accountHelp: Pegue aquí su par de claves Exoscale. Utilizaremos esta clave para crear sus nuevas Instancias.
+    accountHelp: Pegue aquí su par de claves Equinix Metal. Utilizaremos esta clave para crear sus nuevas Instancias.
     loginAction: "Siguiente: autenticar y seleccionar una zona"
-    loadingSecurity: Cargando información del grupo de seguridad desde Exoscale...
+    loadingSecurity: Cargando información del grupo de seguridad desde Equinix Metal...
     securityGroupSection: Grupo de Seguridad
     securityGroup:
       label: Grupo de Seguridad
@@ -28,7 +28,7 @@ nodeDriver:
       custom: "Personalizado: Elegir un grupo existente"
       updating: Actualizando Grupo de Seguridad...
       creating: Creando Grupo de Seguridad...
-    loadingZone: Cargando información de grupo de seguridad desde Exoscale...
+    loadingZone: Cargando información de grupo de seguridad desde Equinix Metal...
     zoneSection: Zona
     selectZoneAction: "Siguiente: Selecciona un Grupo de Seguridad"
     zone:
@@ -53,7 +53,7 @@ nodeDriver:
       placeholder: 'elegido por defecto por docker-machine'
     template:
       label: Plantilla
-  packet:
+  metal:
     accountSection: Acceso a la Cuenta
     projectId:
       placeholder: Tu ID de proyecto de Packet

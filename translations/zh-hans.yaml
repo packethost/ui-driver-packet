@@ -9,18 +9,18 @@ nodeDriver:
   cloudCredentialError: 云凭证必须设置。
   nameError: 名称必须设置。
   displayName:
-    packet: Packet
+    metal: Equinix Metal
   driverOptions: "{driver}选项"
   templateOptions: "{appName}模板"
-  packet:
+  metal:
     accountSection: 账户访问
     projectId:
       label: 项目
-      placeholder: Packet项目 ID
+      placeholder: Equinix Metal项目 ID
     apiKey:
       label: API Key
-      placeholder: Packet API Key
-    apiKeyHelp: '由Packet的<a href="https://app.packet.net/portal#/api-keys" target="_blank">API Keys</a>页面获取。'
+      placeholder: Equinix Metal API Key
+    apiKeyHelp: '由Equinix Metal的<a href="https://console.equinix.com/portal#/api-keys" target="_blank">API Keys</a>页面获取。'
     instanceSection: 实例
     instanceOptionsSection: 实例选项
     loginAction: '下一步: 认证并且选择实例'
