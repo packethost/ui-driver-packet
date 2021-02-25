@@ -131,7 +131,8 @@ gulp.task('server', gulp.parallel(['build', 'watch'], function () {
   return gulpConnect.server({
     root: [DIST],
     port: process.env.PORT || 3000,
-    https: false,
+    host: process.env.HOST || 'localhost',
+    https: process.env.HTTPS || false,
   });
 }));
 
