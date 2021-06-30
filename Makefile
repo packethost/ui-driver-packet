@@ -1,6 +1,6 @@
 default: build
 
-version := 1.0.2
+version := $(shell node -p "require('./package.json').version")
 build: 
 	npm run build
 release:

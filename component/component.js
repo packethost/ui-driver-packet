@@ -1,6 +1,29 @@
+/*!!!!!!!!!!!Do not change anything between here (the DRIVERNAME placeholder will be automatically replaced at buildtime)!!!!!!!!!!!*/
 import NodeDriver from 'shared/mixins/node-driver';
-import fetch from '@rancher/ember-api-store/utils/fetch';
+
+// do not remove LAYOUT, it is replaced at build time with a base64 representation of the template of the hbs template
+// we do this to avoid converting template to a js file that returns a string and the cors issues that would come along with that
 const LAYOUT;
+/*!!!!!!!!!!!DO NOT CHANGE END!!!!!!!!!!!*/
+
+/*!!!!!!!!!!!GLOBAL CONST START!!!!!!!!!!!*/
+// EMBER API Access - if you need access to any of the Ember API's add them here in the same manner rather then import them via modules, since the dependencies exist in rancher we dont want to expor the modules in the amd def
+const computed = Ember.computed;
+const get = Ember.get;
+const set = Ember.set;
+const alias = Ember.computed.alias;
+const service = Ember.inject.service;
+const observer = Ember.observer;
+const hash = Ember.RSVP.hash;
+const fetch = Ember.inject.service;
+const on = Ember.on;
+const setProperties = Ember.setProperties;
+const isEmpty = Ember.isEmpty;
+
+const defaultRadix = 10;
+const defaultBase = 1024;
+/*!!!!!!!!!!!GLOBAL CONST END!!!!!!!!!!!*/
+
 
 const OS_WHITELIST = ['centos_7', 'coreos_stable', 'ubuntu_14_04', 'ubuntu_16_04', 'ubuntu_18_04', 'rancher'];
 const PLAN_BLACKLIST = ['baremetal_2a']; // quick wheres james spader?
@@ -9,44 +32,98 @@ const DEFAULTS = {
   billingCycle: 'hourly',
 }
 const defaultFacility = "ewr1";
-const hash = Ember.RSVP.hash;
-const on = Ember.on;
-const get = Ember.get;
-const setProperties = Ember.setProperties;
-const computed = Ember.computed;
-const observer = Ember.observer;
-const set = Ember.set;
-const alias = Ember.computed.alias;
-const isEmpty = Ember.isEmpty;
 
+/*!!!!!!!!!!!DO NOT CHANGE START!!!!!!!!!!!*/
 export default Ember.Component.extend(NodeDriver, {
-  driverName: 'packet',
-  facilityChoices: null,
-  planChoices: null,
-  osChoices: null,
+  driverName: '%%DRIVERNAME%%',
   step: 1,
-
-  config: alias('model.packetConfig'),
-
+  config: alias('model.%%DRIVERNAME%%Config'),
+  app: service(),
+  intl: service(),
+  fetch: service(),
   init() {
+    // This does on the fly template compiling, if you mess with this :cry:
     const decodedLayout = window.atob(LAYOUT);
     const template = Ember.HTMLBars.compile(decodedLayout, {
       moduleName: 'nodes/components/driver-%%DRIVERNAME%%/template'
     });
+
     set(this, 'layout', template);
+
     this._super(...arguments);
 
-    setProperties(this, {
-      facilityChoices: [],
-      planChoices: [],
-      osChoices: [],
-      allOS: [],
-      deviceType: [{ name: "On Demand", value: "on-demand" }, { name: "Reserved", value: "reserved" }]
+  },
+  /*!!!!!!!!!!!DO NOT CHANGE END!!!!!!!!!!!*/
+  // Write your component here, starting with setting 'model' to a machine with your config populated
+  bootstrap() {
+    // bootstrap is called by rancher ui on 'init', you're better off doing your setup here rather then the init function to ensure everything is setup correctly
+    let config = get(this, 'globalStore').createRecord({
+      type: '%%DRIVERNAME%%Config',
+      projectId: '',
+      apiKey: '',
+      hwReservationId: '',
+      deviceType: 'on-demand',
     });
+
+    set(this, 'model.%%DRIVERNAME%%Config', config);
   },
 
+  // Add custom validation beyond what can be done from the config API schema
+  validate() {
+    // Get generic API validation errors
+    this._super();
+    let errors = get(this, 'errors')||[];
+    if ( !get(this, 'model.name') ) {
+      errors.push('Name is required');
+    }
+
+    // Add more specific errors
+    if (!get(this, 'config.projectId')) {
+      errors.push('Project ID is required');
+    }
+
+    if (!get(this, 'config.apiKey')) {
+      errors.push('API Key is requried');
+    }
+
+    if (!get(this, 'config.plan') || get(this, 'config.plan') == "") {
+      errors.push('Plan is required');
+    }
+
+    // Set the array of errors for display,
+    // and return true if saving should continue.
+    if ( get(errors, 'length') ) {
+      set(this, 'errors', errors.uniq());
+      return false;
+    } else {
+      set(this, 'errors', null);
+      return true;
+    }
+  },
+
+  validateAuthentication() {
+    let errors = get(this, 'model').validationErrors();
+
+    if (!get(this, 'config.projectId')) {
+      errors.push('Project ID is required');
+    }
+
+    if (!get(this, 'config.apiKey')) {
+      errors.push('API Key is required');
+    }
+
+    if (errors.length) {
+      set(this, 'errors', errors.uniq());
+
+      return false;
+    }
+
+    return true;
+  },
+
+  // Any computed properties or custom logic can go here
   actions: {
-    authPacket(savedCB) {
+    authMetal(savedCB) {
       if (!this.validateAuthentication()) {
         savedCB(false);
         return;
@@ -77,6 +154,7 @@ export default Ember.Component.extend(NodeDriver, {
           facilityChoices: hash.facilities.facilities,
           osChoices,
           planChoices: selectedPlans,
+          deviceType: [{ name: "On Demand", value: "on-demand" }, { name: "Reserved", value: "reserved" }]
         });
 
         setProperties(config, DEFAULTS);
@@ -110,69 +188,10 @@ export default Ember.Component.extend(NodeDriver, {
 
     },
   },
-  planChoiceDetails: computed('config.plan', function () {
-    let planSlug = get(this, 'config.plan');
-    let plan = get(this, 'allPlans').findBy('slug', planSlug);
-
-    return plan;
-  }),
-
-  osObserver: on('init', observer('config.os', function () {
-    this.notifyPropertyChange('config.facility');
-  })),
-
-  facilityObserver: on('init', observer('config.facilityCode', function () {
-    let facilities = get(this, 'facilityChoices');
-    let slug = get(this, 'config.facilityCode');
-    let facility = facilities.findBy('code', slug);
-    set(this, 'config.facilityCode', slug)
-    let out = [];
-    let allPlans = get(this, 'allPlans');
-    if (allPlans && facility) {
-      allPlans.forEach((plan) => {
-        plan.available_in.forEach((fac) => {
-          let facId = fac.href.split('/')[fac.href.split('/').length - 1];
-
-          if (facility.id === facId) {
-            out.push(plan);
-          }
-        })
-      });
-      let currentOS = get(this, 'config.os');
-      let osChoices = get(this, 'osChoices');
-      let filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
-      set(this, 'planChoices', filteredByOs);
-
-      if (filteredByOs.length > 0)
-        set(this, 'config.plan', filteredByOs[0].slug)
-      else if (filteredByOs.length == 0) {
-        set(this, 'config.plan', "")
-      }
-      //always set to baremetal_0 when available
-      for (var i = 0; i < filteredByOs.length; i++) {
-        if (filteredByOs[i].slug == 'baremetal_0') {
-          set(this, 'config.plan', filteredByOs[i].slug)
-          break;
-        }
-      }
-    }
-  })),
-
-  bootstrap() {
-    let store = get(this, 'globalStore');
-    let config = store.createRecord({
-      type: 'packetConfig',
-      projectId: '',
-      apiKey: '',
-      hwReservationId: '',
-      deviceType: 'on-demand',
-    });
-
-    const model = get(this, 'model');
-
-    set(model, 'packetConfig', config);
-  },
-
+  facilityChoices: [],
+  planChoices: [],
+  osChoices: [],
+  allOS: [],
   apiRequest(command, opt, out) {
     opt = opt || {};
 
@@ -181,7 +200,7 @@ export default Ember.Component.extend(NodeDriver, {
     if (opt.url) {
       url += opt.url.replace(/^http[s]?\/\//, '');
     } else {
-      url += `${'api.packet.net'}/${command}`;
+      url += `${'api.equinix.com/metal/v1'}/${command}`;
     }
 
     return fetch(url, {
@@ -251,48 +270,51 @@ export default Ember.Component.extend(NodeDriver, {
 
     return out;
   },
+  planChoiceDetails: computed('config.plan', function () {
+    let planSlug = get(this, 'config.plan');
+    let plan = get(this, 'allPlans').findBy('slug', planSlug);
 
-  validate() {
-    let errors = get(this, 'model').validationErrors();
+    return plan;
+  }),
 
-    if (!get(this, 'config.projectId')) {
-      errors.push('Project ID is required');
+  osObserver: on('init', observer('config.os', function () {
+    this.notifyPropertyChange('config.facility');
+  })),
+
+  facilityObserver: on('init', observer('config.facilityCode', function () {
+    let facilities = get(this, 'facilityChoices');
+    let slug = get(this, 'config.facilityCode');
+    let facility = facilities.findBy('code', slug);
+    set(this, 'config.facilityCode', slug)
+    let out = [];
+    let allPlans = get(this, 'allPlans');
+    if (allPlans && facility) {
+      allPlans.forEach((plan) => {
+        plan.available_in.forEach((fac) => {
+          let facId = fac.href.split('/')[fac.href.split('/').length - 1];
+
+          if (facility.id === facId) {
+            out.push(plan);
+          }
+        })
+      });
+      let currentOS = get(this, 'config.os');
+      let osChoices = get(this, 'osChoices');
+      let filteredByOs = this.parsePlans(osChoices.findBy('slug', currentOS), out);
+      set(this, 'planChoices', filteredByOs);
+
+      if (filteredByOs.length > 0)
+        set(this, 'config.plan', filteredByOs[0].slug)
+      else if (filteredByOs.length == 0) {
+        set(this, 'config.plan', "")
+      }
+      //always set to baremetal_0 when available
+      for (var i = 0; i < filteredByOs.length; i++) {
+        if (filteredByOs[i].slug == 'baremetal_0') {
+          set(this, 'config.plan', filteredByOs[i].slug)
+          break;
+        }
+      }
     }
-
-    if (!get(this, 'config.apiKey')) {
-      errors.push('API Key is requried');
-    }
-
-    if (!get(this, 'config.plan') || get(this, 'config.plan') == "") {
-      errors.push('Plan is requried');
-    }
-
-    if (errors.length) {
-      set(this, 'errors', errors.uniq());
-
-      return false;
-    }
-
-    return true;
-  },
-
-  validateAuthentication() {
-    let errors = get(this, 'model').validationErrors();
-
-    if (!get(this, 'config.projectId')) {
-      errors.push('Project ID is required');
-    }
-
-    if (!get(this, 'config.apiKey')) {
-      errors.push('API Key is requried');
-    }
-
-    if (errors.length) {
-      set(this, 'errors', errors.uniq());
-
-      return false;
-    }
-
-    return true;
-  },
+  })),
 });

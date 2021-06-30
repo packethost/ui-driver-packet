@@ -6,16 +6,16 @@ nodeDriver:
   editTemplate: "ノードテンプレートを編集: {name}"
   editWarning: 編集されたノードテンプレートはノードプールによって作成された新しいノードにのみ影響します。既存のノードは自動的に更新または置換されません。<br>プールからノードを削除した場合はテンプレート内の新しい設定を仕様して新しいノードが作成されます。
   displayName:    
-    packet: Packet
+    metal: Equinix Metal
     
   driverOptions: "{driver} オプション"
   templateOptions: "{appName} テンプレート"
-  packet:
+  metal:
     accountSection: アカウントアクセス
     projectId:
-      placeholder: あなたの Packet プロジェクト ID
+      placeholder: あなたの Equinix Metal プロジェクト ID
     apiKey:
-      placeholder: あなたの Packet API キー
+      placeholder: あなたの Equinix Metal API キー
     instanceSection: インスタンス
     instanceOptionsSection: インスタンスオプション
     loginAction: "次へ: 認証とインスタンスの選択"

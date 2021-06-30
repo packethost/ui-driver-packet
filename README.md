@@ -16,9 +16,9 @@ See the Rancher Documentation on [how to add a node driver](https://rancher.com/
 
     | Key               | Value |
     | ----------------- | ----- |
-    | Download URL      | `https://github.com/packethost/docker-machine-driver-packet/releases/latest/download/docker-machine-driver-packet_linux-amd64.zip` |
-    | Custom UI URL     | `https://tinkerbell.org/ui-driver-packet/1.0.2/component.js` |
-    | Whitelist Domains | `api.packet.net` ,`tinkerbell.org` |
+    | Download URL      | `https://github.com/equinix/docker-machine-driver-metal/releases/download/v0.4.0/docker-machine-driver-metal_linux-amd64.zip` |
+    | Custom UI URL     | `https://equinix.github.io/ui-driver-metal/2.0.0/component.js` |
+    | Whitelist Domains | `api.equinix.com` , `equinix.github.io` |
 
 1. Wait for the driver to become "Active"
 1. From the Global view, go to Clusters -> Add Cluster, your driver and custom UI should show up.
@@ -26,8 +26,10 @@ See the Rancher Documentation on [how to add a node driver](https://rancher.com/
 ## Development
 
 This package contains a small web-server that will serve up the custom driver UI at `http://localhost:3000/component.js`. You can run this while developing and point the Rancher settings there.
+
+* `npm install`
 * `npm start`
-* The driver name can be optionally overridden: `npm start -- --name=DRIVERNAME`
+* The driver name can be optionally overridden: `npm start -- --name=metal`
 * The compiled files are viewable at http://localhost:3000.
 * **Note:** The development server does not currently automatically restart when files are changed.
 
@@ -35,6 +37,7 @@ This package contains a small web-server that will serve up the custom driver UI
 
 For other users to see your driver, you need to build it and host the output on a server accessible from their browsers.
 
+* `npm install`
 * `npm run build`
 * Copy the contents of the `dist` directory onto a webserver.
   * If your Rancher is configured to use HA or SSL, the server must also be available via HTTPS.
